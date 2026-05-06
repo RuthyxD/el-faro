@@ -273,10 +273,14 @@
     if (articleForm) {
         articleForm.addEventListener("submit", (event) => {
             event.preventDefault();
+            console.log("📋 Evento submit del formulario disparado");
 
             const validationResult = validateArticleFields();
+            console.log("✓ Validación:", validationResult);
+            
             if (!validationResult.valid) {
                 setMessage(articleMessage, validationResult.message, "error");
+                console.error("❌ Validación fallida:", validationResult.message);
                 return;
             }
 
@@ -286,25 +290,105 @@
             const sectionKey = String(formData.get("seccion") || "").trim();
             const summary = String(formData.get("resumen") || "").trim();
             const imageUrl = String(formData.get("imagen") || "").trim();
+            const autor = String(formData.get("autor") || "Anónimo").trim();
 
-            const sectionsMap = {
-                inicio: document.getElementById("inicio-grid"),
-                deporte: document.getElementById("deporte-grid"),
-                negocios: document.getElementById("negocios-grid")
-            };
+            console.log("📝 Datos del formulario:", {
+                title, category, sectionKey, summary, imageUrl, autor
+            });
 
-            const destination = sectionsMap[sectionKey];
-            if (!destination) {
-                setMessage(articleMessage, "No se encontró la sección seleccionada.", "error");
-                return;
+            // Desactivar el botón mientras se envía
+            const submitButton = articleForm.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = "Publicando...";
             }
 
-            destination.appendChild(createArticleElement(title, category, summary, imageUrl));
-            addRecentArticle(title, category, summary, imageUrl, sectionKey);
-            updateArticleCounts();
-            articleForm.reset();
-            updateArticleSummaryCounter();
-            setMessage(articleMessage, "Listo, el artículo se agregó correctamente.", "success");
+            const params = new URLSearchParams({
+                titulo: title,
+                categoria: category,
+                seccion: sectionKey,
+                resumen: summary,
+                imagen: imageUrl,
+                autor: autor
+            });
+
+            console.log("🚀 Enviando solicitud POST a: index.php?controller=articulo&action=crear");
+            console.log("📤 Parámetros:", params.toString());
+
+            // Enviar datos al servidor
+            fetch("index.php?controller=articulo&action=crear", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: params.toString()
+            })
+            .then(response => {
+                console.log("📬 Respuesta recibida. Status:", response.status);
+                console.log("Content-Type:", response.headers.get("content-type"));
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+                }
+                return response.text(); // Primero obtener como texto
+            })
+            .then(text => {
+                console.log("📋 Texto de respuesta recibido:", text);
+                
+                // Intentar parsear como JSON
+                try {
+                    const data = JSON.parse(text);
+                    console.log("✅ JSON parseado:", data);
+                    
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.textContent = "Agregar artículo";
+                    }
+                    
+                    if (data.exito) {
+                        console.log("✅ Éxito: Artículo guardado en BD");
+                        
+                        // Agregar el artículo visualmente
+                        const sectionsMap = {
+                            inicio: document.getElementById("inicio-grid"),
+                            deporte: document.getElementById("deporte-grid"),
+                            negocios: document.getElementById("negocios-grid")
+                        };
+
+                        const destination = sectionsMap[sectionKey];
+                        if (destination) {
+                            destination.insertBefore(createArticleElement(title, category, summary, imageUrl), destination.firstChild);
+                            addRecentArticle(title, category, summary, imageUrl, sectionKey);
+                            updateArticleCounts();
+                            console.log("🎨 Artículo agregado al DOM");
+                        }
+
+                        articleForm.reset();
+                        updateArticleSummaryCounter();
+                        setMessage(articleMessage, "✅ ¡Artículo publicado y guardado en BD!", "success");
+                        
+                        // Limpiar mensaje de éxito después de 3 segundos
+                        setTimeout(() => {
+                            setMessage(articleMessage, "", "");
+                        }, 3000);
+                    } else {
+                        console.error("❌ Error del servidor:", data.mensaje);
+                        setMessage(articleMessage, data.mensaje || "Error al publicar el artículo.", "error");
+                    }
+                } catch (parseError) {
+                    console.error("❌ Error al parsear JSON:", parseError);
+                    console.error("Respuesta original:", text);
+                    setMessage(articleMessage, "Error: La respuesta del servidor no es JSON válido.", "error");
+                }
+            })
+            .catch(error => {
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = "Agregar artículo";
+                }
+                console.error("❌ Error en la solicitud:", error);
+                setMessage(articleMessage, "Error al enviar el formulario: " + error.message, "error");
+            });
         });
     }
 })();

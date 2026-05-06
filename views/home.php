@@ -28,13 +28,19 @@
             'assets/media/cafeteria1.jpg'
         ];
         $recientes = [];
-        foreach ($articulos as $index => $articulo) {
+        $articulosLimitados = array_slice($articulos, 0, 5);
+        foreach ($articulosLimitados as $index => $articulo) {
+            $seccionLabels = [
+                'inicio' => 'Noticias',
+                'deporte' => 'Deporte',
+                'negocios' => 'Negocios'
+            ];
             $recientes[] = [
                 'titulo' => $articulo->getTitulo(),
                 'categoria' => $articulo->getCategoria(),
                 'descripcion' => $articulo->getDescripcion(),
-                'imagen' => $imagenesRecientes[$index] ?? 'assets/media/opcion3.png',
-                'seccion' => 'Inicio'
+                'imagen' => !empty($articulo->getImagen()) ? $articulo->getImagen() : ($imagenesRecientes[$index] ?? 'assets/media/opcion3.png'),
+                'seccion' => $seccionLabels[$articulo->getSeccion()] ?? 'Publicación'
             ];
         }
         ?>
@@ -47,7 +53,7 @@
 
 <main class="container">
     <section id="inicio">
-        <h2>Sección de artículos de noticias <span class="badge rounded-pill text-primary-emphasis bg-primary-subtle ms-2" data-section-count="inicio">(Artículos: <?php echo count($articulos); ?>)</span></h2>
+        <h2>Sección de artículos de noticias <span class="badge rounded-pill text-primary-emphasis bg-primary-subtle ms-2" data-section-count="inicio">(Artículos: <?php echo count(array_filter($articulos, function($a) { $s = $a->getSeccion(); return $s === 'inicio' || empty($s); })); ?>)</span></h2>
 
         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mt-2" id="inicio-grid">
             <?php
@@ -56,18 +62,27 @@
                 'assets/media/opcion2.jpg',
                 'assets/media/opcion3.png'
             ];
-            foreach ($articulos as $index => $articulo):
-                $imagen = $imagenesInicio[$index] ?? 'assets/media/opcion3.png';
+            $articulosInicio = array_filter($articulos, function($a) { $s = $a->getSeccion(); return $s === 'inicio' || empty($s); });
+            if (empty($articulosInicio)) {
+                echo '<div class="col-12"><p class="text-secondary">No hay artículos en esta sección aún.</p></div>';
+            } else {
+                foreach ($articulosInicio as $index => $articulo):
+                    // Usar la imagen del artículo si existe, si no usar imagen por defecto
+                    $imagen = !empty($articulo->getImagen()) ? $articulo->getImagen() : ($imagenesInicio[$index] ?? 'assets/media/opcion3.png');
+                ?>
+                    <article class="card h-100 border-0 overflow-hidden" data-article-card>
+                        <img src="<?php echo htmlspecialchars($imagen); ?>" alt="<?php echo htmlspecialchars($articulo->getTitulo()); ?>" onerror="this.src='assets/media/opcion3.png'">
+                        <div class="card-body d-flex flex-column" data-article-content>
+                            <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge><?php echo htmlspecialchars($articulo->getCategoria()); ?></span>
+                            <h3><?php echo htmlspecialchars($articulo->getTitulo()); ?></h3>
+                            <p><?php echo htmlspecialchars($articulo->getDescripcion()); ?></p>
+                        </div>
+                    </article>
+                <?php
+                endforeach;
+            }
             ?>
-                <article class="card h-100 border-0 overflow-hidden" data-article-card>
-                    <img src="<?php echo htmlspecialchars($imagen); ?>" alt="<?php echo htmlspecialchars($articulo->getTitulo()); ?>">
-                    <div class="card-body d-flex flex-column" data-article-content>
-                        <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge><?php echo htmlspecialchars($articulo->getCategoria()); ?></span>
-                        <h3><?php echo htmlspecialchars($articulo->getTitulo()); ?></h3>
-                        <p><?php echo htmlspecialchars($articulo->getDescripcion()); ?></p>
-                    </div>
-                </article>
-            <?php endforeach; ?>
+        </div>
         </div>
 
         <div class="mt-4">
@@ -98,70 +113,56 @@
     </section>
 
     <section id="deporte">
-        <h2>Sección de deporte <span class="badge rounded-pill text-primary-emphasis bg-primary-subtle ms-2" data-section-count="deporte">(Artículos: 3)</span></h2>
+        <h2>Sección de deporte <span class="badge rounded-pill text-primary-emphasis bg-primary-subtle ms-2" data-section-count="deporte">(Artículos: <?php echo count(array_filter($articulos, function($a) { return $a->getSeccion() === 'deporte'; })); ?>)</span></h2>
 
-        <div class="row g-4 mt-2">
-            <div class="col-lg-8">
-                <article class="card h-100 border-0 overflow-hidden" data-article-card>
-                    <img src="assets/media/deporte1.jpg" alt="Equipo local celebrando campeonato regional">
-                    <div class="card-body d-flex flex-column" data-article-content>
-                        <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge>Fútbol</span>
-                        <h3>Con final dramática, el equipo local se queda con el título regional</h3>
-                        <p>El triunfo se definió en los últimos minutos y desató una celebración masiva en la comuna. Jugadores e hinchas destacaron el trabajo de toda la temporada y el apoyo de la comunidad.</p>
-                    </div>
-                </article>
-            </div>
-            <div class="col-lg-4">
-                <div id="deporte-grid" class="d-flex flex-column gap-4">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mt-2" id="deporte-grid">
+            <?php
+            $articulosDeporte = array_filter($articulos, function($a) { return $a->getSeccion() === 'deporte'; });
+            if (empty($articulosDeporte)) {
+                echo '<div class="col-12"><p class="text-secondary">No hay artículos en esta sección aún.</p></div>';
+            } else {
+                foreach ($articulosDeporte as $articulo):
+                    $imagen = !empty($articulo->getImagen()) ? $articulo->getImagen() : 'assets/media/opcion3.png';
+                ?>
                     <article class="card h-100 border-0 overflow-hidden" data-article-card>
-                        <img src="assets/media/deporte2corrida-familiar.jpg" alt="Participantes en corrida familiar comunitaria">
+                        <img src="<?php echo htmlspecialchars($imagen); ?>" alt="<?php echo htmlspecialchars($articulo->getTitulo()); ?>" onerror="this.src='assets/media/opcion3.png'">
                         <div class="card-body d-flex flex-column" data-article-content>
-                            <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge>Atletismo</span>
-                            <h3>Corrida familiar reúne a cientos de vecinos en jornada deportiva</h3>
-                            <p>Actividad que combinó deporte, recreación y vida saludable para todas las edades.</p>
+                            <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge><?php echo htmlspecialchars($articulo->getCategoria()); ?></span>
+                            <h3><?php echo htmlspecialchars($articulo->getTitulo()); ?></h3>
+                            <p><?php echo htmlspecialchars($articulo->getDescripcion()); ?></p>
                         </div>
                     </article>
-                    <article class="card h-100 border-0 overflow-hidden" data-article-card>
-                        <img src="assets/media/deporte3habilidades-deportivas.jpg" alt="Estudiantes en entrenamiento de habilidades deportivas">
-                        <div class="card-body d-flex flex-column" data-article-content>
-                            <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge>Formación deportiva</span>
-                            <h3>Escuela abre taller formativo de básquetbol para estudiantes</h3>
-                            <p>El nuevo taller buscará fortalecer habilidades técnicas, trabajo en equipo y disciplina.</p>
-                        </div>
-                    </article>
-                </div>
-            </div>
+                <?php
+                endforeach;
+            }
+            ?>
         </div>
     </section>
 
     <section id="negocios">
-        <h2>Sección de Negocios <span class="badge rounded-pill text-primary-emphasis bg-primary-subtle ms-2" data-section-count="negocios">(Artículos: 3)</span></h2>
+        <h2>Sección de Negocios <span class="badge rounded-pill text-primary-emphasis bg-primary-subtle ms-2" data-section-count="negocios">(Artículos: <?php echo count(array_filter($articulos, function($a) { return $a->getSeccion() === 'negocios'; })); ?>)</span></h2>
 
         <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mt-2" id="negocios-grid">
-            <article class="card h-100 border-0 overflow-hidden" data-article-card>
-                <img src="assets/media/cafeteria1.jpg" alt="Cafetería local mejorando su servicio a domicilio">
-                <div class="card-body d-flex flex-column" data-article-content>
-                    <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge>Emprendimiento</span>
-                    <h3>Cafetería local amplía su servicio a domicilio</h3>
-                    <p>La cafetería sumó reparto propio y promociones semanales para ampliar cobertura en la comuna.</p>
-                </div>
-            </article>
-            <article class="card h-100 border-0 overflow-hidden" data-article-card>
-                <img src="assets/media/tienda-digital2.jpg" alt="Jóvenes emprendedores en tienda digital de artesanías">
-                <div class="card-body d-flex flex-column" data-article-content>
-                    <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge>Innovación</span>
-                    <h3>Jóvenes lanzan tienda digital de productos artesanales</h3>
-                    <p>El proyecto opera con catálogo en línea, pagos digitales y despachos programados.</p>
-                </div>
-            </article>
-            <article class="card h-100 border-0 overflow-hidden" data-article-card>
-                <img src="assets/media/capacitacion3.jpeg" alt="Participantes en capacitación para pequeñas empresas">
-                <div class="card-body d-flex flex-column" data-article-content>
-                    <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge>Negocios</span>
-                    <h3>Capacitación gratuita apoyará a pequeñas empresas</h3>
-                    <p>Talleres prácticos de gestión, ventas y marketing digital para dueños de pymes.</p>
-                </div>
-            </article>
+            <?php
+            $articulosNegocios = array_filter($articulos, function($a) { return $a->getSeccion() === 'negocios'; });
+            if (empty($articulosNegocios)) {
+                echo '<div class="col-12"><p class="text-secondary">No hay artículos en esta sección aún.</p></div>';
+            } else {
+                foreach ($articulosNegocios as $articulo):
+                    $imagen = !empty($articulo->getImagen()) ? $articulo->getImagen() : 'assets/media/opcion3.png';
+                ?>
+                    <article class="card h-100 border-0 overflow-hidden" data-article-card>
+                        <img src="<?php echo htmlspecialchars($imagen); ?>" alt="<?php echo htmlspecialchars($articulo->getTitulo()); ?>" onerror="this.src='assets/media/opcion3.png'">
+                        <div class="card-body d-flex flex-column" data-article-content>
+                            <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge><?php echo htmlspecialchars($articulo->getCategoria()); ?></span>
+                            <h3><?php echo htmlspecialchars($articulo->getTitulo()); ?></h3>
+                            <p><?php echo htmlspecialchars($articulo->getDescripcion()); ?></p>
+                        </div>
+                    </article>
+                <?php
+                endforeach;
+            }
+            ?>
         </div>
     </section>
 
@@ -186,7 +187,7 @@
                     <label for="articulo-seccion" class="form-label">Sección destino <span class="text-danger fw-bold ms-1" aria-hidden="true">*</span></label>
                     <select id="articulo-seccion" name="seccion" class="form-select" required>
                         <option value="">Selecciona una sección</option>
-                        <option value="inicio">Inicio</option>
+                        <option value="inicio">Noticias</option>
                         <option value="deporte">Deporte</option>
                         <option value="negocios">Negocios</option>
                     </select>

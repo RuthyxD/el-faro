@@ -12,14 +12,22 @@ class ContactoController {
     public function procesar() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Sanitizar datos
-            $nombre = htmlspecialchars($_POST['nombre']);
-            $correo = htmlspecialchars($_POST['correo']);
-            $mensaje = htmlspecialchars($_POST['mensaje']);
+            $nombre = htmlspecialchars(trim($_POST['nombre']));
+            $correo = htmlspecialchars(trim($_POST['correo']));
+            $mensaje = htmlspecialchars(trim($_POST['mensaje']));
 
             // Crear objeto Contacto
             $contacto = new Contacto($nombre, $correo, $mensaje);
 
-            // Simular procesamiento (no hay BD)
+            // Guardar en la BD
+            if ($contacto->guardar()) {
+                $exito = true;
+                $mensaje_resultado = "¡Tu mensaje ha sido enviado correctamente! Nos pondremos en contacto pronto.";
+            } else {
+                $exito = false;
+                $mensaje_resultado = "Error al enviar el mensaje. Intenta de nuevo.";
+            }
+
             // Mostrar resultado
             require_once 'views/resultado_contacto.php';
         } else {

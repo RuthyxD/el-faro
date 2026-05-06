@@ -31,9 +31,24 @@ switch ($controller) {
             $usuarioController->registro();
         } elseif ($action == 'registrar') {
             $usuarioController->registrar();
+        } elseif ($action == 'listar') {
+            $usuarioController->listar();
         } else {
             // Acción no válida, redirigir a registro
             header('Location: index.php?controller=usuario&action=registro');
+        }
+        break;
+    case 'articulo':
+        require_once 'controllers/ArticuloController.php';
+        $articuloController = new ArticuloController();
+        if ($action == 'crear') {
+            $articuloController->crear();
+        } elseif ($action == 'obtener-por-seccion') {
+            $seccion = $_GET['seccion'] ?? '';
+            $articuloController->obtenerPorSeccion($seccion);
+        } else {
+            // Acción no válida, redirigir a home
+            header('Location: index.php');
         }
         break;
     default:
