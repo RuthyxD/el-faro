@@ -1,6 +1,13 @@
 <?php
-// models/Usuario.php - Modelo para Usuario
+/**
+ * models/Usuario.php
+ * Modelo para Usuarios del sistema
+ * 
+ * Utiliza la clase Database para manejar todas las operaciones
+ * con la tabla de usuarios de forma segura usando PDO.
+ */
 
+require_once dirname(dirname(__FILE__)) . '/config/config.php';
 require_once 'Database.php';
 
 class Usuario {

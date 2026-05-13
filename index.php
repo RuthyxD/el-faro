@@ -1,5 +1,15 @@
 <?php
-// index.php - Archivo principal y enrutador básico
+/**
+ * index.php
+ * Archivo principal y enrutador básico del proyecto "El Faro"
+ * 
+ * Este archivo es el punto de entrada de la aplicación.
+ * Implementa un sistema de ruteo básico que carga los controladores
+ * según los parámetros de la URL.
+ */
+
+// Incluir configuración centralizada
+require_once 'config/config.php';
 
 // Obtener parámetros de la URL
 $controller = $_GET['controller'] ?? 'home';

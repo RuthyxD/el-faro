@@ -1,6 +1,13 @@
 <?php
-// models/Articulo.php - Modelo para Artículo o Noticia
+/**
+ * models/Articulo.php
+ * Modelo para Artículos/Noticias
+ * 
+ * Utiliza la clase Database para manejar todas las operaciones
+ * con la tabla de artículos de forma segura usando PDO.
+ */
 
+require_once dirname(dirname(__FILE__)) . '/config/config.php';
 require_once 'Database.php';
 
 class Articulo {

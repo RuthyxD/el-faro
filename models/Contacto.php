@@ -1,6 +1,13 @@
 <?php
-// models/Contacto.php - Modelo para Contacto
+/**
+ * models/Contacto.php
+ * Modelo para Mensajes de Contacto
+ * 
+ * Utiliza la clase Database para manejar todas las operaciones
+ * con la tabla de contactos de forma segura usando PDO.
+ */
 
+require_once dirname(dirname(__FILE__)) . '/config/config.php';
 require_once 'Database.php';
 
 class Contacto {
