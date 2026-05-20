@@ -33,6 +33,369 @@
             .replace(/'/g, "&#39;");
     }
 
+    /**
+     * Trunca un texto a una longitud máxima
+     * @param {string} text - Texto a truncar
+     * @param {number} maxLength - Longitud máxima
+     * @returns {string} Texto truncado con "..."
+     */
+    function truncateText(text, maxLength = 100) {
+        if (!text || text.length <= maxLength) return text;
+        return text.substring(0, maxLength).trim() + '...';
+    }
+
+    /**
+     * Inicializa los botones "Leer más" de las tarjetas de artículos
+     */
+    function initializeArticleButtons() {
+        const buttons = document.querySelectorAll('[data-article-button]');
+        buttons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                const card = this.closest('[data-article-card]');
+                if (card) {
+                    const title = card.querySelector('h3')?.textContent || 'Artículo';
+                    const desc = card.querySelector('[data-article-desc]')?.textContent || '';
+                    const author = card.querySelector('[data-article-meta] strong')?.textContent || 'Redactor';
+                    const date = card.querySelector('[data-article-date]')?.textContent || 'N/A';
+                    
+                    // Mostrar alerta con información del artículo
+                    alert(`📰 ${title}\n\n${desc}\n\nAutor: ${author} | Fecha: ${date}`);
+                }
+            });
+        });
+    }
+
+    /**
+     * Aplica truncado de texto en las descripciones de artículos
+     */
+    function applyTextTruncation() {
+        const descriptions = document.querySelectorAll('[data-article-desc]');
+        descriptions.forEach(el => {
+            const originalText = el.textContent;
+            el.textContent = truncateText(originalText, 100);
+            el.title = originalText; // Mostrar texto completo en tooltip
+        });
+    }
+
+    /**
+     * Valida el campo de nombre
+     */
+    function validateName(field) {
+        const value = field.value.trim();
+        const isValid = value.length > 0 && value.length <= 120;
+        return isValid;
+    }
+
+    /**
+     * Valida el campo de email
+     */
+    function validateEmail(field) {
+        const value = field.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value);
+    }
+
+    /**
+     * Valida el campo de mensaje
+     */
+    function validateMessage(field) {
+        const value = field.value.trim();
+        return value.length >= 10 && value.length <= 600;
+    }
+
+    /**
+     * Valida el campo de contraseña
+     */
+    function validatePassword(field) {
+        const value = field.value;
+        return value.length >= 6;
+    }
+
+    /**
+     * Actualiza el estado visual de un campo de formulario
+     */
+    function updateFieldState(field, isValid) {
+        if (isValid) {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+        } else if (field.value.trim() !== '') {
+            field.classList.add('is-invalid');
+            field.classList.remove('is-valid');
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.remove('is-valid');
+        }
+    }
+
+    /**
+     * Maneja la validación en tiempo real del formulario de contacto
+     */
+    function setupContactFormValidation() {
+        const form = document.getElementById('form-contacto');
+        if (!form) return;
+
+        const nombreField = document.getElementById('contacto-nombre');
+        const correoField = document.getElementById('contacto-email');
+        const mensajeField = document.getElementById('contacto-mensaje');
+        const submitBtn = document.getElementById('btn-submit-contacto');
+
+        // Validación en tiempo real
+        if (nombreField) {
+            nombreField.addEventListener('blur', () => {
+                const isValid = validateName(nombreField);
+                updateFieldState(nombreField, isValid);
+            });
+            nombreField.addEventListener('input', () => {
+                if (nombreField.classList.contains('is-invalid')) {
+                    const isValid = validateName(nombreField);
+                    updateFieldState(nombreField, isValid);
+                }
+            });
+        }
+
+        if (correoField) {
+            correoField.addEventListener('blur', () => {
+                const isValid = validateEmail(correoField);
+                updateFieldState(correoField, isValid);
+            });
+            correoField.addEventListener('input', () => {
+                if (correoField.classList.contains('is-invalid')) {
+                    const isValid = validateEmail(correoField);
+                    updateFieldState(correoField, isValid);
+                }
+            });
+        }
+
+        if (mensajeField) {
+            mensajeField.addEventListener('blur', () => {
+                const isValid = validateMessage(mensajeField);
+                updateFieldState(mensajeField, isValid);
+            });
+            mensajeField.addEventListener('input', () => {
+                if (mensajeField.classList.contains('is-invalid')) {
+                    const isValid = validateMessage(mensajeField);
+                    updateFieldState(mensajeField, isValid);
+                }
+                // Actualizar contador
+                updateContactCounter();
+            });
+        }
+
+        // Envío del formulario
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Validar todos los campos
+            const isNombreValid = validateName(nombreField);
+            const isCorreoValid = validateEmail(correoField);
+            const isMensajeValid = validateMessage(mensajeField);
+
+            updateFieldState(nombreField, isNombreValid);
+            updateFieldState(correoField, isCorreoValid);
+            updateFieldState(mensajeField, isMensajeValid);
+
+            if (!isNombreValid || !isCorreoValid || !isMensajeValid) {
+                return;
+            }
+
+            // Deshabilitar botón y mostrar estado de carga
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...';
+            }
+
+            // Enviar formulario
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Mostrar mensaje de éxito
+                const successMsg = document.getElementById('form-success-message');
+                const errorMsg = document.getElementById('form-error-message');
+                
+                if (successMsg) {
+                    successMsg.classList.remove('d-none');
+                    errorMsg.classList.add('d-none');
+                }
+
+                // Limpiar formulario
+                form.reset();
+                nombreField.classList.remove('is-valid');
+                correoField.classList.remove('is-valid');
+                mensajeField.classList.remove('is-valid');
+                updateContactCounter();
+
+                // Volver a habilitar botón
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Enviar mensaje';
+                }
+
+                // Ocultar mensaje de éxito después de 5 segundos
+                setTimeout(() => {
+                    if (successMsg) {
+                        successMsg.classList.add('d-none');
+                    }
+                }, 5000);
+            })
+            .catch(error => {
+                const errorMsg = document.getElementById('form-error-message');
+                if (errorMsg) {
+                    document.getElementById('error-text').textContent = 'Error al enviar el formulario. Por favor, intenta de nuevo.';
+                    errorMsg.classList.remove('d-none');
+                }
+
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Enviar mensaje';
+                }
+            });
+        });
+    }
+
+    /**
+     * Maneja la validación en tiempo real del formulario de registro
+     */
+    function setupRegistrationFormValidation() {
+        const form = document.getElementById('form-registro');
+        if (!form) return;
+
+        const nombreField = document.getElementById('nombre_completo');
+        const correoField = document.getElementById('correo');
+        const passwordField = document.getElementById('contrasena');
+        const passwordConfirmField = document.getElementById('contrasena_confirma');
+        const submitBtn = document.getElementById('btn-submit-registro');
+
+        // Validación en tiempo real
+        if (nombreField) {
+            nombreField.addEventListener('blur', () => {
+                const isValid = validateName(nombreField);
+                updateFieldState(nombreField, isValid);
+            });
+            nombreField.addEventListener('input', () => {
+                if (nombreField.classList.contains('is-invalid')) {
+                    const isValid = validateName(nombreField);
+                    updateFieldState(nombreField, isValid);
+                }
+            });
+        }
+
+        if (correoField) {
+            correoField.addEventListener('blur', () => {
+                const isValid = validateEmail(correoField);
+                updateFieldState(correoField, isValid);
+            });
+            correoField.addEventListener('input', () => {
+                if (correoField.classList.contains('is-invalid')) {
+                    const isValid = validateEmail(correoField);
+                    updateFieldState(correoField, isValid);
+                }
+            });
+        }
+
+        if (passwordField) {
+            passwordField.addEventListener('blur', () => {
+                const isValid = validatePassword(passwordField);
+                updateFieldState(passwordField, isValid);
+            });
+            passwordField.addEventListener('input', () => {
+                if (passwordField.classList.contains('is-invalid')) {
+                    const isValid = validatePassword(passwordField);
+                    updateFieldState(passwordField, isValid);
+                }
+            });
+        }
+
+        if (passwordConfirmField) {
+            passwordConfirmField.addEventListener('blur', () => {
+                const isValid = passwordField.value === passwordConfirmField.value && passwordConfirmField.value.length >= 6;
+                updateFieldState(passwordConfirmField, isValid);
+            });
+            passwordConfirmField.addEventListener('input', () => {
+                if (passwordConfirmField.classList.contains('is-invalid')) {
+                    const isValid = passwordField.value === passwordConfirmField.value && passwordConfirmField.value.length >= 6;
+                    updateFieldState(passwordConfirmField, isValid);
+                }
+            });
+        }
+
+        // Envío del formulario
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            // Validar todos los campos
+            const isNombreValid = validateName(nombreField);
+            const isCorreoValid = validateEmail(correoField);
+            const isPasswordValid = validatePassword(passwordField);
+            const isPasswordConfirmValid = passwordField.value === passwordConfirmField.value && passwordConfirmField.value.length >= 6;
+
+            updateFieldState(nombreField, isNombreValid);
+            updateFieldState(correoField, isCorreoValid);
+            updateFieldState(passwordField, isPasswordValid);
+            updateFieldState(passwordConfirmField, isPasswordConfirmValid);
+
+            if (!isNombreValid || !isCorreoValid || !isPasswordValid || !isPasswordConfirmValid) {
+                return;
+            }
+
+            // Deshabilitar botón y mostrar estado de carga
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Creando cuenta...';
+            }
+
+            // Enviar formulario
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form)
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Mostrar mensaje de éxito
+                const successMsg = document.getElementById('form-success-message-registro');
+                const errorMsg = document.getElementById('form-error-message-registro');
+                
+                if (successMsg) {
+                    successMsg.classList.remove('d-none');
+                    errorMsg.classList.add('d-none');
+                }
+
+                // Limpiar formulario
+                form.reset();
+                nombreField.classList.remove('is-valid');
+                correoField.classList.remove('is-valid');
+                passwordField.classList.remove('is-valid');
+                passwordConfirmField.classList.remove('is-valid');
+
+                // Volver a habilitar botón
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Crear cuenta';
+                }
+
+                // Redirigir después de 2 segundos
+                setTimeout(() => {
+                    window.location.href = 'index.php';
+                }, 2000);
+            })
+            .catch(error => {
+                const errorMsg = document.getElementById('form-error-message-registro');
+                if (errorMsg) {
+                    document.getElementById('error-text-registro').textContent = 'Error al crear la cuenta. Por favor, intenta de nuevo.';
+                    errorMsg.classList.remove('d-none');
+                }
+
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Crear cuenta';
+                }
+            });
+        });
+    }
+
     const contactMessageField = document.getElementById("contacto-mensaje");
     const contactCounter = document.getElementById("contador-contacto-mensaje");
     const articleForm = document.getElementById("form-nuevo-articulo");
@@ -260,6 +623,10 @@
     renderRecentArticles();
     updateArticleSummaryCounter();
     updateArticleCounts();
+    applyTextTruncation();
+    initializeArticleButtons();
+    setupContactFormValidation();
+    setupRegistrationFormValidation();
     window.setInterval(renderDateTime, 1000);
 
     if (contactMessageField) {

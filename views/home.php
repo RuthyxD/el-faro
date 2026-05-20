@@ -1,4 +1,6 @@
-<?php require_once 'views/layout/header.php'; ?>
+<?php require_once 'views/layout/header.php'; 
+// SEMANA 9 - MEJORA VISUAL: Recargar caché de opcodes - Timestamp: 1716155200
+?>
 <div class="container">
     <div class="section-directory" aria-label="Acceso rápido a secciones">
         <h2>Secciones del sitio</h2>
@@ -69,13 +71,26 @@
                 foreach ($articulosInicio as $index => $articulo):
                     // Usar la imagen del artículo si existe, si no usar imagen por defecto
                     $imagen = !empty($articulo->getImagen()) ? $articulo->getImagen() : ($imagenesInicio[$index] ?? 'assets/media/opcion3.png');
+                    $autor = $articulo->getAutor() ?? 'Redactor';
+                    $fecha = isset($articulo->getFecha()) ? $articulo->getFecha() : date('Y-m-d H:i:s');
                 ?>
-                    <article class="card h-100 border-0 overflow-hidden" data-article-card>
+                    <article class="card h-100" data-article-card>
                         <img src="<?php echo htmlspecialchars($imagen); ?>" alt="<?php echo htmlspecialchars($articulo->getTitulo()); ?>" onerror="this.src='assets/media/opcion3.png'">
                         <div class="card-body d-flex flex-column" data-article-content>
-                            <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge><?php echo htmlspecialchars($articulo->getCategoria()); ?></span>
+                            <span class="badge" data-category-badge><?php echo htmlspecialchars($articulo->getCategoria()); ?></span>
+                            
                             <h3><?php echo htmlspecialchars($articulo->getTitulo()); ?></h3>
-                            <p><?php echo htmlspecialchars($articulo->getDescripcion()); ?></p>
+                            
+                            <p data-article-desc><?php echo htmlspecialchars($articulo->getDescripcion()); ?></p>
+                            
+                            <div data-article-meta>
+                                <small><strong><?php echo htmlspecialchars($autor); ?></strong></small>
+                                <small data-article-date><?php echo date('d/m/Y', strtotime($fecha)); ?></small>
+                            </div>
+                            
+                            <div data-article-button-wrap>
+                                <button class="btn btn-sm btn-primary" data-article-button type="button" aria-label="Leer más sobre <?php echo htmlspecialchars($articulo->getTitulo()); ?>">Leer más →</button>
+                            </div>
                         </div>
                     </article>
                 <?php
@@ -123,13 +138,26 @@
             } else {
                 foreach ($articulosDeporte as $articulo):
                     $imagen = !empty($articulo->getImagen()) ? $articulo->getImagen() : 'assets/media/opcion3.png';
+                    $autor = $articulo->getAutor() ?? 'Redactor';
+                    $fecha = isset($articulo->getFecha()) ? $articulo->getFecha() : date('Y-m-d H:i:s');
                 ?>
-                    <article class="card h-100 border-0 overflow-hidden" data-article-card>
+                    <article class="card h-100" data-article-card>
                         <img src="<?php echo htmlspecialchars($imagen); ?>" alt="<?php echo htmlspecialchars($articulo->getTitulo()); ?>" onerror="this.src='assets/media/opcion3.png'">
                         <div class="card-body d-flex flex-column" data-article-content>
-                            <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge><?php echo htmlspecialchars($articulo->getCategoria()); ?></span>
+                            <span class="badge" data-category-badge><?php echo htmlspecialchars($articulo->getCategoria()); ?></span>
+                            
                             <h3><?php echo htmlspecialchars($articulo->getTitulo()); ?></h3>
-                            <p><?php echo htmlspecialchars($articulo->getDescripcion()); ?></p>
+                            
+                            <p data-article-desc><?php echo htmlspecialchars($articulo->getDescripcion()); ?></p>
+                            
+                            <div data-article-meta>
+                                <small><strong><?php echo htmlspecialchars($autor); ?></strong></small>
+                                <small data-article-date><?php echo date('d/m/Y', strtotime($fecha)); ?></small>
+                            </div>
+                            
+                            <div data-article-button-wrap>
+                                <button class="btn btn-sm btn-primary" data-article-button type="button" aria-label="Leer más sobre <?php echo htmlspecialchars($articulo->getTitulo()); ?>">Leer más →</button>
+                            </div>
                         </div>
                     </article>
                 <?php
@@ -150,13 +178,26 @@
             } else {
                 foreach ($articulosNegocios as $articulo):
                     $imagen = !empty($articulo->getImagen()) ? $articulo->getImagen() : 'assets/media/opcion3.png';
+                    $autor = $articulo->getAutor() ?? 'Redactor';
+                    $fecha = isset($articulo->getFecha()) ? $articulo->getFecha() : date('Y-m-d H:i:s');
                 ?>
-                    <article class="card h-100 border-0 overflow-hidden" data-article-card>
+                    <article class="card h-100" data-article-card>
                         <img src="<?php echo htmlspecialchars($imagen); ?>" alt="<?php echo htmlspecialchars($articulo->getTitulo()); ?>" onerror="this.src='assets/media/opcion3.png'">
                         <div class="card-body d-flex flex-column" data-article-content>
-                            <span class="badge rounded-pill text-uppercase align-self-start mb-2" data-category-badge><?php echo htmlspecialchars($articulo->getCategoria()); ?></span>
+                            <span class="badge" data-category-badge><?php echo htmlspecialchars($articulo->getCategoria()); ?></span>
+                            
                             <h3><?php echo htmlspecialchars($articulo->getTitulo()); ?></h3>
-                            <p><?php echo htmlspecialchars($articulo->getDescripcion()); ?></p>
+                            
+                            <p data-article-desc><?php echo htmlspecialchars($articulo->getDescripcion()); ?></p>
+                            
+                            <div data-article-meta>
+                                <small><strong><?php echo htmlspecialchars($autor); ?></strong></small>
+                                <small data-article-date><?php echo date('d/m/Y', strtotime($fecha)); ?></small>
+                            </div>
+                            
+                            <div data-article-button-wrap>
+                                <button class="btn btn-sm btn-primary" data-article-button type="button" aria-label="Leer más sobre <?php echo htmlspecialchars($articulo->getTitulo()); ?>">Leer más →</button>
+                            </div>
                         </div>
                     </article>
                 <?php

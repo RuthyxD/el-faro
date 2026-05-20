@@ -5,6 +5,8 @@
  * 
  * Este archivo contiene todas las constantes necesarias para
  * conectarse a la base de datos MySQL usando PDO.
+ * 
+ * SEMANA 9: Mejoras de Usabilidad y UX - Forzar recarga de caché
  */
 
 // Configuración de la Base de Datos
@@ -26,3 +28,4 @@ define('CONTROLLERS_PATH', BASE_PATH . 'controllers/');
 define('VIEWS_PATH', BASE_PATH . 'views/');
 
 ?>
+
